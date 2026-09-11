@@ -13,11 +13,13 @@ ReadingList.init(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: 'user_id',
       references: { model: 'users', key: 'id' },
     },
     blogId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: 'blog_id',
       references: { model: 'blogs', key: 'id' },
     },
     read: {
@@ -30,6 +32,7 @@ ReadingList.init(
     sequelize,
     timestamps: true,
     underscored: true,
+    tableName: 'reading_lists',
     modelName: 'reading_list',
   },
 )

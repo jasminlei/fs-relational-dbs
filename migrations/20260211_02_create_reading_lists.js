@@ -38,6 +38,7 @@ module.exports = {
     await queryInterface.addIndex('reading_lists', ['user_id', 'blog_id'], {
       unique: true,
       name: 'reading_lists_user_blog_unique',
+      ifNotExists: true,
     })
   },
 

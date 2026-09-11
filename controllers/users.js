@@ -17,6 +17,33 @@ usersRouter.get('/', async (req, res, next) => {
   }
 })
 
+usersRouter.get('/:id', async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.params.id, {
+      attributes: {
+        exclude: ['password', 'token'],
+      },
+      include: {
+        model: Blog,
+        attributes: ['id', 'author', 'url', 'title', 'likes', 'year'],
+        through: { attributes: [] },
+      },
+    })
+
+    if (!user) {
+      return res.status(404).end()
+    }
+
+    const userData = user.toJSON()
+    userData.readings = userData.blogs || []
+    delete userData.blogs
+
+    res.json(userData)
+  } catch (error) {
+    next(error)
+  }
+})
+
 usersRouter.post('/', async (req, res, next) => {
   try {
     const user = await User.create({
