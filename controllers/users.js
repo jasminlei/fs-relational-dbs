@@ -26,7 +26,9 @@ usersRouter.get('/:id', async (req, res, next) => {
       include: {
         model: Blog,
         attributes: ['id', 'author', 'url', 'title', 'likes', 'year'],
-        through: { attributes: [] },
+        through: {
+          attributes: ['id', 'read'],
+        },
       },
     })
 
@@ -35,7 +37,10 @@ usersRouter.get('/:id', async (req, res, next) => {
     }
 
     const userData = user.toJSON()
-    userData.readings = userData.blogs || []
+    userData.readings = (userData.blogs || []).map((blog) => ({
+      ...blog,
+      reading_list: blog.reading_list || blog.reading_list || null,
+    }))
     delete userData.blogs
 
     res.json(userData)
