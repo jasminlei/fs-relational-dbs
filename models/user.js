@@ -22,6 +22,14 @@ User.init(
         isEmail: true,
       },
     },
+    password: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    token: {
+      type: DataTypes.TEXT,
+      unique: true,
+    },
   },
   {
     sequelize,

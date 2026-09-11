@@ -1,18 +1,39 @@
 const blogsRouter = require('express').Router()
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
+const { tokenExtractor } = require('../util/token')
 
 blogsRouter.get('/', async (req, res, next) => {
   try {
-    const blogs = await Blog.findAll()
+    const blogs = await Blog.findAll({
+      include: {
+        model: User,
+        attributes: ['id', 'name', 'username'],
+      },
+    })
     res.json(blogs)
   } catch (error) {
     next(error)
   }
 })
 
-blogsRouter.post('/', async (req, res, next) => {
+blogsRouter.post('/', tokenExtractor, async (req, res, next) => {
   try {
-    const blog = await Blog.create(req.body)
+    if (!req.token) {
+      return res.status(401).json({ error: 'token missing' })
+    }
+
+    const user = await User.findOne({
+      where: { token: req.token },
+    })
+
+    if (!user) {
+      return res.status(401).json({ error: 'token invalid' })
+    }
+
+    const blog = await Blog.create({
+      ...req.body,
+      userId: user.id,
+    })
     res.json(blog)
   } catch (error) {
     next(error)
