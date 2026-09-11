@@ -51,14 +51,4 @@ blogsRouter.put('/:id', async (req, res, next) => {
   }
 })
 
-const errorHandler = (error, req, res, next) => {
-  console.error(error.message)
-
-  res.status(400).json({
-    error: error.message,
-  })
-}
-
-app.use(errorHandler)
-
 module.exports = blogsRouter
