@@ -1,7 +1,7 @@
 const blogsRouter = require('express').Router()
 const { Op } = require('sequelize')
 const { Blog, User } = require('../models')
-const { tokenExtractor } = require('../util/token')
+const { authenticateSession } = require('../util/auth')
 
 blogsRouter.get('/', async (req, res, next) => {
   try {
@@ -36,23 +36,11 @@ blogsRouter.get('/', async (req, res, next) => {
   }
 })
 
-blogsRouter.post('/', tokenExtractor, async (req, res, next) => {
+blogsRouter.post('/', authenticateSession, async (req, res, next) => {
   try {
-    if (!req.token) {
-      return res.status(401).json({ error: 'token missing' })
-    }
-
-    const user = await User.findOne({
-      where: { token: req.token },
-    })
-
-    if (!user) {
-      return res.status(401).json({ error: 'token invalid' })
-    }
-
     const blog = await Blog.create({
       ...req.body,
-      userId: user.id,
+      userId: req.user.id,
     })
     res.json(blog)
   } catch (error) {
@@ -60,23 +48,11 @@ blogsRouter.post('/', tokenExtractor, async (req, res, next) => {
   }
 })
 
-blogsRouter.delete('/:id', tokenExtractor, async (req, res, next) => {
+blogsRouter.delete('/:id', authenticateSession, async (req, res, next) => {
   try {
     const blog = await Blog.findByPk(req.params.id)
 
-    if (!req.token) {
-      return res.status(401).json({ error: 'token missing' })
-    }
-
-    const user = await User.findOne({
-      where: { token: req.token },
-    })
-
-    if (!user) {
-      return res.status(401).json({ error: 'token invalid' })
-    }
-
-    if (blog && blog.userId === user.id) {
+    if (blog && blog.userId === req.user.id) {
       await blog.destroy()
       res.status(204).end()
     } else if (blog) {

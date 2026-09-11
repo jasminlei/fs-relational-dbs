@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const loginRouter = require('express').Router()
-const { User } = require('../models')
+const { Session, User } = require('../models')
 
 loginRouter.post('/', async (req, res, next) => {
   try {
@@ -10,6 +10,7 @@ loginRouter.post('/', async (req, res, next) => {
       where: {
         username,
         password,
+        disabled: false,
       },
     })
 
@@ -18,8 +19,11 @@ loginRouter.post('/', async (req, res, next) => {
     }
 
     const token = crypto.randomBytes(32).toString('hex')
-    user.token = token
-    await user.save()
+
+    await Session.create({
+      token,
+      userId: user.id,
+    })
 
     res.status(200).json({
       token,

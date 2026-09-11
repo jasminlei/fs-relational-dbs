@@ -1,6 +1,6 @@
 const readingListsRouter = require('express').Router()
 const { Blog, ReadingList, User } = require('../models')
-const { tokenExtractor } = require('../util/token')
+const { authenticateSession } = require('../util/auth')
 
 readingListsRouter.post('/', async (req, res, next) => {
   try {
@@ -47,27 +47,15 @@ readingListsRouter.post('/', async (req, res, next) => {
   }
 })
 
-readingListsRouter.put('/:id', tokenExtractor, async (req, res, next) => {
+readingListsRouter.put('/:id', authenticateSession, async (req, res, next) => {
   try {
-    if (!req.token) {
-      return res.status(401).json({ error: 'token missing' })
-    }
-
-    const user = await User.findOne({
-      where: { token: req.token },
-    })
-
-    if (!user) {
-      return res.status(401).json({ error: 'token invalid' })
-    }
-
     const readingList = await ReadingList.findByPk(req.params.id)
 
     if (!readingList) {
       return res.status(404).end()
     }
 
-    if (readingList.userId !== user.id) {
+    if (readingList.userId !== req.user.id) {
       return res
         .status(403)
         .json({ error: 'not allowed to modify this reading list' })
