@@ -40,13 +40,27 @@ blogsRouter.post('/', tokenExtractor, async (req, res, next) => {
   }
 })
 
-blogsRouter.delete('/:id', async (req, res, next) => {
+blogsRouter.delete('/:id', tokenExtractor, async (req, res, next) => {
   try {
     const blog = await Blog.findByPk(req.params.id)
 
-    if (blog) {
+    if (!req.token) {
+      return res.status(401).json({ error: 'token missing' })
+    }
+
+    const user = await User.findOne({
+      where: { token: req.token },
+    })
+
+    if (!user) {
+      return res.status(401).json({ error: 'token invalid' })
+    }
+
+    if (blog && blog.userId === user.id) {
       await blog.destroy()
       res.status(204).end()
+    } else if (blog) {
+      res.status(403).json({ error: 'not allowed to delete this blog' })
     } else {
       res.status(404).end()
     }
