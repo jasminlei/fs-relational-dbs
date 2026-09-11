@@ -1,7 +1,9 @@
 const { Sequelize } = require('sequelize')
 const config = require('./config')
 
-const sequelize = new Sequelize(config.DATABASE_URL)
+const databaseUrl = process.env.TESTING === 'true' ? config.TEST_DATABASE_URL : config.DATABASE_URL
+
+const sequelize = new Sequelize(databaseUrl)
 
 const connectToDatabase = async () => {
   try {

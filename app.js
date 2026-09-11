@@ -4,10 +4,26 @@ const authorsRouter = require('./controllers/authors')
 const blogsRouter = require('./controllers/blogs')
 const loginRouter = require('./controllers/login')
 const usersRouter = require('./controllers/users')
+const { Blog, User } = require('./models')
 
 const app = express()
 
 app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.sendStatus(200)
+})
+
+app.post('/api/reset', async (req, res, next) => {
+  try {
+    await Blog.destroy({ where: {} })
+    await User.destroy({ where: {} })
+
+    res.sendStatus(200)
+  } catch (error) {
+    next(error)
+  }
+})
 
 app.use('/api/authors', authorsRouter)
 app.use('/api/blogs', blogsRouter)
