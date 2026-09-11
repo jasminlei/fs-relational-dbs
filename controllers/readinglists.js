@@ -16,12 +16,12 @@ readingListsRouter.post('/', async (req, res, next) => {
 
     const user = await User.findByPk(userId)
     if (!user) {
-      return res.status(400).json({ error: 'Invalid userId' })
+      return res.status(404).json({ error: 'Invalid userId' })
     }
 
     const blog = await Blog.findByPk(blogId)
     if (!blog) {
-      return res.status(400).json({ error: 'Invalid blogId' })
+      return res.status(404).json({ error: 'Invalid blogId' })
     }
 
     const existingEntry = await ReadingList.findOne({
@@ -41,7 +41,16 @@ readingListsRouter.post('/', async (req, res, next) => {
       read: false,
     })
 
-    res.status(201).json(reading)
+    const readingData = reading.toJSON()
+
+    res.status(201).json({
+      id: readingData.id,
+      user_id: readingData.userId,
+      blog_id: readingData.blogId,
+      read: readingData.read,
+      createdAt: readingData.createdAt,
+      updatedAt: readingData.updatedAt,
+    })
   } catch (error) {
     next(error)
   }
@@ -57,7 +66,7 @@ readingListsRouter.put('/:id', authenticateSession, async (req, res, next) => {
 
     if (readingList.userId !== req.user.id) {
       return res
-        .status(403)
+        .status(401)
         .json({ error: 'not allowed to modify this reading list' })
     }
 
