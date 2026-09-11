@@ -19,6 +19,13 @@ usersRouter.get('/', async (req, res, next) => {
 
 usersRouter.get('/:id', async (req, res, next) => {
   try {
+    const readFilter =
+      req.query.read === 'true'
+        ? true
+        : req.query.read === 'false'
+          ? false
+          : undefined
+
     const user = await User.findByPk(req.params.id, {
       attributes: {
         exclude: ['password', 'token'],
@@ -28,6 +35,7 @@ usersRouter.get('/:id', async (req, res, next) => {
         attributes: ['id', 'author', 'url', 'title', 'likes', 'year'],
         through: {
           attributes: ['id', 'read'],
+          ...(readFilter === undefined ? {} : { where: { read: readFilter } }),
         },
       },
     })
@@ -39,7 +47,7 @@ usersRouter.get('/:id', async (req, res, next) => {
     const userData = user.toJSON()
     userData.readings = (userData.blogs || []).map((blog) => ({
       ...blog,
-      reading_list: blog.reading_list || blog.reading_list || null,
+      reading_list: blog.reading_list || null,
     }))
     delete userData.blogs
 
